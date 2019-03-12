@@ -4,28 +4,22 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-
-#ifdef  __cplusplus
-extern  "C" {
+#ifdef __cplusplus
+extern "C" {
 #endif
 
+int byte_fdump(
+	FILE* fp, const char* extra_msg, const unsigned char* v, unsigned n_byte);
 
+unsigned byte_fget(FILE* fp, unsigned char* v, unsigned n_byte);
 
-int byte_fdump(FILE * fp, const char * extra_msg , const unsigned char *v, unsigned n_byte);
+int byte_from_file(unsigned char* v, unsigned n_byte, const char* f_name);
 
-unsigned byte_fget( FILE * fp, unsigned char *v , unsigned n_byte );
+int byte_read_file(
+	unsigned char** msg, unsigned long long* len, const char* f_name);
 
-int byte_from_file( unsigned char *v , unsigned n_byte , const char * f_name );
-
-
-int byte_read_file( unsigned char ** msg , unsigned long long * len , const char * f_name );
-
-
-#ifdef  __cplusplus
+#ifdef __cplusplus
 }
 #endif
 
-
-
 #endif
-

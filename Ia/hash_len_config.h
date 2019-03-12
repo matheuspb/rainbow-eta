@@ -4,7 +4,7 @@
 #include "rainbow_config.h"
 
 #ifndef _HASH_LEN
-error!
+error !
 #endif
 
 #endif
