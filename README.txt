@@ -1,4 +1,5 @@
-This folder contains the c-code of the reference implementation of the Rainbow signature scheme.
+This folder contains the c-code of the reference implementation of the Rainbow
+signature scheme.
 Each of the subfolders contains the code for one parameter set
 
 Ia    - Rainbow (GF(16),32,32,32)
@@ -12,7 +13,8 @@ VIa   - Rainbow(GF(16),76,64,64)
 VIb   - Rainbow(GF(31),84,56,56)
 
 
-Type 'make'. It will generate an executable using source files from the directory specified in PROJ_DIR.
+Type 'make'. It will generate an executable using source files from the
+directory specified in PROJ_DIR.
 
 The default value of PROJ_DIR is Ia.  To generate executable files
 PQCgenKAT_sign, rainbow-genkey, rainbow-sign, and rainbow-verify
@@ -28,20 +30,24 @@ rainbow-{genkey,sign,verify}.c - source file for testing programs
 util.c - small utility programs
 util.h - header for utility programs
 
-    
-      
-The single algorithms rainbow-genkey, rainbow-sign and rainbow-verify are used as follows.
-  (1)
-  Run:  rainbow-genkey pk.txt sk.txt [seed_file]
-  rainbow-genkey generates a Rainbow key pair and stores it in the files pk.txt and sk.txt.
-  If seed_file is set, the algorithm uses the content of seed_file as seed for the PRNG and outputs the used randomness in the terminal.
-  (2)
-  Run:  rainbow-sign sk.txt  file_to_be_signed [seed_file] > signaturefile.txt
-  rainbow-sign reads in the secret key from sk.txt and the message from file_to_be_signed.
-  If seed_file is set, rainbow-sign uses the content of seed_file as seed for the PRNG and outputs the used randomness in the terminal.
-  (3)
-  Run: rainbow-verify pk.txt file_to_be_signed signaturefile.txt
-  The algorithm reads in the public key, the signed document and the signature and outputs TRUE or FALSE.
-  
-  Remark: The length of the seed is fixed to 48 byte (=384 bit). 
-  
+
+The single algorithms rainbow-genkey, rainbow-sign and rainbow-verify are used
+as follows.
+	  (1)
+	  Run: rainbow-genkey pk.txt sk.txt [seed_file]
+	  rainbow-genkey generates a Rainbow key pair and stores it in the files
+	  pk.txt and sk.txt.  If seed_file is set, the algorithm uses the content
+	  of seed_file as seed for the PRNG and outputs the used randomness in the
+	  terminal.
+	  (2)
+	  Run: rainbow-sign sk.txt file_to_be_signed [seed_file] > signaturefile.txt
+	  rainbow-sign reads in the secret key from sk.txt and the message from
+	  file_to_be_signed.  If seed_file is set, rainbow-sign uses the content of
+	  seed_file as seed for the PRNG and outputs the used randomness in the
+	  terminal.
+	  (3)
+	  Run: rainbow-verify pk.txt signaturefile.txt file_to_be_signed
+	  The algorithm reads in the public key, the signed document and the
+	  signature and outputs TRUE or FALSE.
+
+	  Remark: The length of the seed is fixed to 48 byte (=384 bit).

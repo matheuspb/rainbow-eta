@@ -4,7 +4,7 @@ LD=    gcc
 
 
 #PROJ = amd64
-PROJ = Vc
+PROJ = Ia
 
 PROJ_DIR = ./$(PROJ)
 
