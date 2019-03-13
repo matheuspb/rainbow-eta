@@ -2,7 +2,8 @@
 #ifndef _RAINBOW_H_
 #define _RAINBOW_H_
 
-#include "rainbow_config.h"
+// This file sets Rainbow parameters, therefore, depends on the PROJ choosen
+#include <rainbow_config.h>
 
 #include "blas.h"
 
@@ -10,6 +11,15 @@
 
 #ifdef __cplusplus
 extern "C" {
+#endif
+
+// Just set dummy values, they won't be used anwyay
+#ifndef _O1_BYTE
+#define _O1_BYTE 1
+#endif
+
+#ifndef _O2_BYTE
+#define _O2_BYTE 1
 #endif
 
 struct _rainbow_ckey {

@@ -6,7 +6,10 @@ PROJ = Ia
 PROJ_DIR = ./$(PROJ)
 
 CFLAGS = -O2 -std=c11 -Wall -Wextra 
-INCPATH = -I/usr/local/include -I/opt/local/include -I/usr/include -I$(PROJ_DIR)
+INCPATH = -I/usr/local/include
+INCPATH += -I/opt/local/include
+INCPATH += -I/usr/include -I$(PROJ_DIR)
+INCPATH += -I./common
 LDFLAGS =
 LIBPATH = -L/usr/local/lib -L/opt/local/lib -L/usr/lib
 LIBS = -lcrypto
@@ -14,11 +17,14 @@ LIBS = -lcrypto
 SRCS = $(wildcard $(PROJ_DIR)/*.c)
 SRCS_O = $(SRCS:.c=.o)
 SRCS_O_ND = $(subst $(PROJ_DIR)/,,$(SRCS_O))
+COMMON = $(wildcard common/*.c)
+COMMON_O = $(COMMON:.c=.o)
+COMMON_O_ND = $(subst common/,,$(COMMON_O))
 
-OBJ = $(SRCS_O_ND) utils.o
+OBJ = $(SRCS_O_ND) $(COMMON_O_ND) utils.o
 EXE = PQCgenKAT_sign rainbow-genkey rainbow-sign rainbow-verify
 
-.PHONY: all tests tables clean
+.PHONY: all clean
 
 all: $(OBJ) $(EXE)
 
@@ -38,6 +44,9 @@ PQCgenKAT_sign: $(OBJ) PQCgenKAT_sign.o
 	$(CC) $(CFLAGS) $(INCPATH) -c $<
 
 %.o: $(PROJ_DIR)/%.c
+	$(CC) $(CFLAGS) $(INCPATH) -c $<
+
+%.o: common/%.c
 	$(CC) $(CFLAGS) $(INCPATH) -c $<
 
 %.o: %.cpp
