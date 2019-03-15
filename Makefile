@@ -5,14 +5,12 @@ LD = gcc
 PROJ = Ia
 PROJ_DIR = ./$(PROJ)
 
-CFLAGS = -O2 -std=c11 -Wall -Wextra 
-INCPATH = -I/usr/local/include
-INCPATH += -I/opt/local/include
-INCPATH += -I/usr/include -I$(PROJ_DIR)
-INCPATH += -I./common
-LDFLAGS =
-LIBPATH = -L/usr/local/lib -L/opt/local/lib -L/usr/lib
-LIBS = -lcrypto
+CFLAGS = -O2 -std=c11 -Wall -Wextra
+CFLAGS += -I/usr/local/include
+CFLAGS += -I/opt/local/include
+CFLAGS += -I/usr/include -I$(PROJ_DIR)
+CFLAGS += -I./common
+LDFLAGS = -L/usr/local/lib -L/opt/local/lib -L/usr/lib -lcrypto
 
 SRCS = $(wildcard $(PROJ_DIR)/*.c)
 SRCS_O = $(SRCS:.c=.o)
@@ -29,28 +27,18 @@ EXE = PQCgenKAT_sign rainbow-genkey rainbow-sign rainbow-verify
 all: $(OBJ) $(EXE)
 
 rainbow-genkey: $(OBJ) rainbow-genkey.o
-	$(LD) $(LDFLAGS) $(LIBPATH) -o $@ $^ $(LIBS)
 
 rainbow-sign: $(OBJ) rainbow-sign.o
-	$(LD) $(LDFLAGS) $(LIBPATH) -o $@ $^ $(LIBS)
 
 rainbow-verify: $(OBJ) rainbow-verify.o
-	$(LD) $(LDFLAGS) $(LIBPATH) -o $@ $^ $(LIBS)
 
 PQCgenKAT_sign: $(OBJ) PQCgenKAT_sign.o
-	$(LD) $(LDFLAGS) $(LIBPATH) -o $@ $^ $(LIBS)
-
-%.o: %.c
-	$(CC) $(CFLAGS) $(INCPATH) -c $<
 
 %.o: $(PROJ_DIR)/%.c
-	$(CC) $(CFLAGS) $(INCPATH) -c $<
+	$(CC) $(CFLAGS) -c $<
 
 %.o: common/%.c
-	$(CC) $(CFLAGS) $(INCPATH) -c $<
-
-%.o: %.cpp
-	$(CXX) $(CXXFLAGS) $(INCPATH) -c $<
+	$(CC) $(CFLAGS) -c $<
 
 clean:
 	rm -f *.o  rainbow-genkey rainbow-sign rainbow-verify  PQCgenKAT_sign
