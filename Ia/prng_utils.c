@@ -87,7 +87,7 @@ void prng_seed(const unsigned char* a, unsigned _num_byte) {
 		RAND_seed(a, _num_byte);
 	else {
 		memcpy(entropy_input, a, (_num_byte > 48) ? 48 : _num_byte);
-		randombytes_init(entropy_input, NULL, 256);
+		randombytes_init(entropy_input, NULL);
 	}
 }
 

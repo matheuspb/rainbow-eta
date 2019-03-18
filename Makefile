@@ -1,7 +1,3 @@
-CC = gcc
-CXX = g++
-LD = gcc
-
 PROJ = Ia
 PROJ_DIR = ./$(PROJ)
 
@@ -19,12 +15,12 @@ COMMON = $(wildcard common/*.c)
 COMMON_O = $(COMMON:.c=.o)
 COMMON_O_ND = $(subst common/,,$(COMMON_O))
 
-OBJ = $(SRCS_O_ND) $(COMMON_O_ND) utils.o
-EXE = PQCgenKAT_sign rainbow-genkey rainbow-sign rainbow-verify
+OBJ = $(SRCS_O_ND) $(COMMON_O_ND)
+EXE = rainbow-genkey rainbow-sign rainbow-verify
 
 .PHONY: all clean
 
-all: $(OBJ) $(EXE)
+all: $(EXE)
 
 rainbow-genkey: $(OBJ) rainbow-genkey.o
 
@@ -32,13 +28,20 @@ rainbow-sign: $(OBJ) rainbow-sign.o
 
 rainbow-verify: $(OBJ) rainbow-verify.o
 
-PQCgenKAT_sign: $(OBJ) PQCgenKAT_sign.o
-
 %.o: $(PROJ_DIR)/%.c
 	$(CC) $(CFLAGS) -c $<
 
 %.o: common/%.c
 	$(CC) $(CFLAGS) -c $<
 
+test: $(EXE)
+	@echo "Generating key pair"
+	@./rainbow-genkey pk sk
+	@echo "Signing"
+	@./rainbow-sign sk Makefile > sig
+	@echo "Verifying"
+	@./rainbow-verify pk sig Makefile
+	@rm pk sk sig
+
 clean:
-	rm -f *.o  rainbow-genkey rainbow-sign rainbow-verify  PQCgenKAT_sign
+	@rm -f *.o $(EXE)
