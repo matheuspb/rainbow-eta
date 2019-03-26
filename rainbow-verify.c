@@ -12,7 +12,7 @@
 int main(int argc, char** argv) {
 	printf("%s\n", CRYPTO_ALGNAME);
 
-	printf("sk size: %lu\n", CRYPTO_SECRETKEYBYTES);
+	printf("sk size: %lu\n", SMALL_SEC_KEY_LEN);
 	printf("pk size: %d\n", CRYPTO_PUBLICKEYBYTES);
 	printf("hash size: %d\n", _HASH_LEN);
 	printf("signature size: %d\n\n", CRYPTO_BYTES);

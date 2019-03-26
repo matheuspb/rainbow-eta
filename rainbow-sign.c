@@ -12,7 +12,7 @@
 int main(int argc, char** argv) {
 	printf("%s\n", CRYPTO_ALGNAME);
 
-	printf("sk size: %lu\n", CRYPTO_SECRETKEYBYTES);
+	printf("sk size: %lu\n", SMALL_SEC_KEY_LEN);
 	printf("pk size: %d\n", CRYPTO_PUBLICKEYBYTES);
 	printf("hash size: %d\n", _HASH_LEN);
 	printf("signature size: %d\n\n", CRYPTO_BYTES);
@@ -34,7 +34,7 @@ int main(int argc, char** argv) {
 		prng_seed_file("dev/random");
 	}
 
-	uint8_t* _sk = (uint8_t*) malloc(CRYPTO_SECRETKEYBYTES);
+	uint8_t* _sk = (uint8_t*) malloc(SMALL_SEC_KEY_LEN);
 
 	FILE* fp;
 	int r = 0;
@@ -44,9 +44,9 @@ int main(int argc, char** argv) {
 		printf("fail to open secret key file.\n");
 		return -1;
 	}
-	r = byte_fget(fp, _sk, CRYPTO_SECRETKEYBYTES);
+	r = byte_fget(fp, _sk, SMALL_SEC_KEY_LEN);
 	fclose(fp);
-	if (CRYPTO_SECRETKEYBYTES != r) {
+	if (SMALL_SEC_KEY_LEN != r) {
 		printf("fail to load key file.\n");
 		return -1;
 	}

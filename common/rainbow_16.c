@@ -247,18 +247,21 @@ void rainbow_genkey(uint8_t* pk, uint8_t* sk) {
 
 	mpkc_pub_map_gf16_n_m(_sk.temp_vv1, _sk.ckey.l1_vv, _sk.vinegar, _V1, _O1);
 
-	memcpy(sk, (uint8_t*) (&_sk), sizeof(rainbow_key));
+	memcpy(sk, (uint8_t*) (&_sk), sizeof(rainbow_small_key));
 	mpkc_interpolate_gf16(pk, rainbow_pubmap_wrapper, (const void*) &_pk);
 
 	pk[_PUB_KEY_LEN - 1] = _SALT_BYTE;
-	sk[_SEC_KEY_LEN - 1] = _SALT_BYTE;
+	sk[SMALL_SEC_KEY_LEN - 1] = _SALT_BYTE;
 }
 
 /// algorithm 7
 int rainbow_sign(
 	uint8_t* signature, const uint8_t* _sk, const uint8_t* _digest) {
-	const rainbow_key* sk = (const rainbow_key*) _sk;
-	const rainbow_ckey* k = &(sk->ckey);
+	rainbow_key sk;
+	memcpy((void*) &sk, _sk, sizeof(rainbow_small_key));
+	// copy _SALT_BYTE
+	((uint8_t*) &sk)[_SEC_KEY_LEN - 1] = _sk[SMALL_SEC_KEY_LEN - 1];
+	const rainbow_ckey* k = &(sk.ckey);
 	//// line 1 - 5
 	uint8_t mat_l2[_O2 * _O2_BYTE];
 	uint8_t temp_o1[_O1_BYTE] = {0};
@@ -273,7 +276,7 @@ int rainbow_sign(
 	uint8_t* salt = digest_salt + _HASH_LEN;
 	memcpy(digest_salt, _digest, _HASH_LEN);
 
-	memcpy(x, sk->vinegar, _V1_BYTE);
+	memcpy(x, sk.vinegar, _V1_BYTE);
 	unsigned succ = 0;
 	unsigned time = 0;
 	while (!succ) {
@@ -284,12 +287,12 @@ int rainbow_sign(
 		sha2_chain_msg(
 			_z, _PUB_M_BYTE, digest_salt, _HASH_LEN + _SALT_BYTE);  /// line 9
 
-		gf256v_add(_z, sk->vec_s, _PUB_M_BYTE);
-		gf16mat_prod(y, sk->mat_s, _PUB_M_BYTE, _PUB_M, _z);  /// line 10
+		gf256v_add(_z, sk.vec_s, _PUB_M_BYTE);
+		gf16mat_prod(y, sk.mat_s, _PUB_M_BYTE, _PUB_M, _z);  /// line 10
 
-		memcpy(temp_o1, sk->temp_vv1, _O1_BYTE);
+		memcpy(temp_o1, sk.temp_vv1, _O1_BYTE);
 		gf256v_add(temp_o1, y, _O1_BYTE);
-		linear_solver_l1(x + _V1_BYTE, sk->mat_l1, temp_o1);
+		linear_solver_l1(x + _V1_BYTE, sk.mat_l1, temp_o1);
 
 		gen_l2_mat(mat_l2, k, x);
 		mpkc_pub_map_gf16_n_m(temp_o2, k->l2_vv, x, _V2, _O2);
@@ -298,8 +301,8 @@ int rainbow_sign(
 
 		time++;
 	};
-	gf256v_add(x, sk->vec_t, _PUB_N_BYTE);
-	gf16mat_prod(w, sk->mat_t, _PUB_N_BYTE, _PUB_N, x);
+	gf256v_add(x, sk.vec_t, _PUB_N_BYTE);
+	gf16mat_prod(w, sk.mat_t, _PUB_N_BYTE, _PUB_N, x);
 
 	memset(signature, 0, _SIGNATURE_BYTE);
 	// return time;

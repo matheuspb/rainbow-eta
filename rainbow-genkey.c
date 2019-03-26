@@ -11,7 +11,7 @@
 int main(int argc, char** argv) {
 	printf("%s\n", CRYPTO_ALGNAME);
 
-	printf("sk size: %lu\n", CRYPTO_SECRETKEYBYTES);
+	printf("sk size: %lu\n", SMALL_SEC_KEY_LEN);
 	printf("pk size: %d\n", CRYPTO_PUBLICKEYBYTES);
 	printf("hash size: %d\n", _HASH_LEN);
 	printf("signature size: %d\n\n", CRYPTO_BYTES);
@@ -33,7 +33,7 @@ int main(int argc, char** argv) {
 		prng_seed_file("/dev/random");
 	}
 
-	uint8_t* _sk = (uint8_t*) malloc(CRYPTO_SECRETKEYBYTES);
+	uint8_t* _sk = (uint8_t*) malloc(SMALL_SEC_KEY_LEN);
 	uint8_t* qp_pk = (uint8_t*) malloc(CRYPTO_PUBLICKEYBYTES);
 	FILE* fp;
 
@@ -58,7 +58,7 @@ int main(int argc, char** argv) {
 	}
 	// ptr = (unsigned char *)&sk;
 	// sprintf(msg,"%s secret key", name);
-	byte_fdump(fp, CRYPTO_ALGNAME " secret key", _sk, CRYPTO_SECRETKEYBYTES);
+	byte_fdump(fp, CRYPTO_ALGNAME " secret key", _sk, SMALL_SEC_KEY_LEN);
 	fclose(fp);
 
 	printf("generate %s pk/sk success.\n", CRYPTO_ALGNAME);

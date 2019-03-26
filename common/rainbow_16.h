@@ -23,13 +23,13 @@ extern "C" {
 #endif
 
 struct _rainbow_ckey {
-	uint8_t l1_o[_O1 * _O1_BYTE];
-	uint8_t l1_vo[_O1][_V1 * _O1_BYTE];
-	uint8_t l1_vv[TERMS_QUAD_POLY(_V1) * _O1_BYTE];
-
 	uint8_t l2_o[_O2 * _O2_BYTE];
 	uint8_t l2_vo[_O2][_V2 * _O2_BYTE];
 	uint8_t l2_vv[TERMS_QUAD_POLY(_V2) * _O2_BYTE];
+
+	uint8_t l1_o[_O1 * _O1_BYTE];
+	uint8_t l1_vo[_O1][_V1 * _O1_BYTE];
+	uint8_t l1_vv[TERMS_QUAD_POLY(_V1) * _O1_BYTE];
 };
 
 typedef struct _rainbow_ckey rainbow_ckey;
@@ -40,6 +40,7 @@ struct _rainbow_key {
 	uint8_t mat_s[_PUB_M * _PUB_M_BYTE];
 	uint8_t vec_s[_PUB_M_BYTE];
 
+	// TODO remove these
 	uint8_t vinegar[_V1_BYTE];
 	uint8_t mat_l1[_O1 * _O1_BYTE];
 	uint8_t temp_vv1[_O1_BYTE];
@@ -49,8 +50,36 @@ struct _rainbow_key {
 
 typedef struct _rainbow_key rainbow_key;
 
+// smaller private key for rainbow-eta
+
+struct _rainbow_small_ckey {
+	uint8_t l2_o[_O2 * _O2_BYTE];
+	uint8_t l2_vo[_O2][_V2 * _O2_BYTE];
+	uint8_t l2_vv[TERMS_QUAD_POLY(_V2) * _O2_BYTE];
+};
+
+typedef struct _rainbow_small_ckey rainbow_small_ckey;
+
+struct _rainbow_small_key {
+	uint8_t mat_t[_PUB_N * _PUB_N_BYTE];
+	uint8_t vec_t[_PUB_N_BYTE];
+	uint8_t mat_s[_PUB_M * _PUB_M_BYTE];
+	uint8_t vec_s[_PUB_M_BYTE];
+
+	uint8_t vinegar[_V1_BYTE];
+	uint8_t mat_l1[_O1 * _O1_BYTE];
+	uint8_t temp_vv1[_O1_BYTE];
+
+	rainbow_small_ckey ckey;
+};
+
+typedef struct _rainbow_small_key rainbow_small_key;
+
 /// length for secret key ( extra 1 for length of salt)
 #define _SEC_KEY_LEN (sizeof(rainbow_key) + 1)
+
+// length for smaller private key
+#define SMALL_SEC_KEY_LEN (sizeof(rainbow_small_key) + 1)
 
 /// algorithm 6
 void rainbow_genkey(uint8_t* pk, uint8_t* sk);
