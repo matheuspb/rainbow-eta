@@ -40,6 +40,10 @@ struct _rainbow_key {
 	uint8_t mat_s[_PUB_M * _PUB_M_BYTE];
 	uint8_t vec_s[_PUB_M_BYTE];
 
+	uint8_t vinegar[_V1_BYTE];
+	uint8_t mat_l1[_O1 * _O1_BYTE];
+	uint8_t temp_vv1[_O1_BYTE];
+
 	rainbow_ckey ckey;
 };
 

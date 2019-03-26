@@ -45,3 +45,4 @@ test: $(EXE)
 
 clean:
 	@rm -f *.o $(EXE)
+	@rm -f pk sk sig
