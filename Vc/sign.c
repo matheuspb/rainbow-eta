@@ -2,8 +2,8 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "rainbow.h"
-#include "rainbow_config.h"
+#include <rainbow_c.h>
+#include <rainbow_config.h>
 
 #include "hash_utils.h"
 

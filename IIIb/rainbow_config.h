@@ -1,6 +1,8 @@
 #ifndef _RAINBOW_CONFIG_H_
 #define _RAINBOW_CONFIG_H_
 
+#define RAINBOW_B
+
 /// (36,28,28) (64,32,48) (84,56,56)
 
 //#define _RAINBOW31_36_28_28

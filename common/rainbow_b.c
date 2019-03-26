@@ -1,7 +1,8 @@
-
 #include "rainbow_config.h"
 
-#include "rainbow.h"
+#ifdef RAINBOW_B
+
+#include <rainbow_b.h>
 
 #include "gf31.h"
 
@@ -348,3 +349,5 @@ int rainbow_verify(
 
 	return (0 == cc) ? 0 : -1;
 }
+
+#endif

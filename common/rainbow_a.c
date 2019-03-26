@@ -1,7 +1,7 @@
 
 #include "rainbow_config.h"
 
-#include "rainbow_16.h"
+#include <rainbow_a.h>
 
 #include "blas.h"
 

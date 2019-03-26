@@ -8,6 +8,10 @@
 
 #include "api.h"
 
+#ifndef SMALL_SEC_KEY_LEN
+#define SMALL_SEC_KEY_LEN CRYPTO_SECRETKEYBYTES
+#endif
+
 int main(int argc, char** argv) {
 	printf("%s\n", CRYPTO_ALGNAME);
 

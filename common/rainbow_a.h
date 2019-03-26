@@ -22,6 +22,10 @@ extern "C" {
 #define _O2_BYTE 1
 #endif
 
+#ifndef _V1_BYTE
+#define _V1_BYTE 1
+#endif
+
 struct _rainbow_ckey {
 	uint8_t l2_o[_O2 * _O2_BYTE];
 	uint8_t l2_vo[_O2][_V2 * _O2_BYTE];

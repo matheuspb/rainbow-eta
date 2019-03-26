@@ -10,7 +10,7 @@
 #ifndef api_h
 #define api_h
 
-#include "rainbow.h"
+#include <rainbow_b.h>
 #include "rainbow_config.h"
 
 //  Set these three values apropriately for your algorithm

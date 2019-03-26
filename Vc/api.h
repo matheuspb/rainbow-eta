@@ -10,8 +10,8 @@
 #ifndef api_h
 #define api_h
 
-#include "rainbow.h"
-#include "rainbow_config.h"
+#include <rainbow_c.h>
+#include <rainbow_config.h>
 
 //  Set these three values apropriately for your algorithm
 #define CRYPTO_SECRETKEYBYTES _SEC_KEY_LEN

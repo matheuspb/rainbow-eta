@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "rainbow.h"
+#include "rainbow_b.h"
 #include "rainbow_config.h"
 
 #include "hash_utils.h"
