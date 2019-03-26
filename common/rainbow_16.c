@@ -72,6 +72,37 @@ rainbow_pubmap_wrapper(void* z, const void* pk_key, const void* w) {
 		(uint8_t*) z, (const rainbow_key*) pk_key, (const uint8_t*) w);
 }
 
+// helper functions to manipulate smaller rainbow-eta key
+static void shrink_rainbow_key(rainbow_small_key* _small_sk, rainbow_key* _sk) {
+	memcpy(_small_sk->mat_t, _sk->mat_t, _PUB_N * _PUB_N_BYTE);
+	memcpy(_small_sk->vec_t, _sk->vec_t, _PUB_N_BYTE);
+	memcpy(_small_sk->mat_s, _sk->mat_s, _PUB_M * _PUB_M_BYTE);
+	memcpy(_small_sk->vec_s, _sk->vec_s, _PUB_M_BYTE);
+
+	memcpy(_small_sk->ckey.l2_o, _sk->ckey.l2_o, _O2 * _O2_BYTE);
+	memcpy(_small_sk->ckey.l2_vo, _sk->ckey.l2_vo, _O2 * _V2 * _O2_BYTE);
+	memcpy(
+		_small_sk->ckey.l2_vv, _sk->ckey.l2_vv,
+		TERMS_QUAD_POLY(_V2) * _O2_BYTE);
+}
+
+static void expand_rainbow_key(rainbow_key* _sk, rainbow_small_key* _small_sk) {
+	memcpy(_sk->mat_t, _small_sk->mat_t, _PUB_N * _PUB_N_BYTE);
+	memcpy(_sk->vec_t, _small_sk->vec_t, _PUB_N_BYTE);
+	memcpy(_sk->mat_s, _small_sk->mat_s, _PUB_M * _PUB_M_BYTE);
+	memcpy(_sk->vec_s, _small_sk->vec_s, _PUB_M_BYTE);
+
+	memcpy(_sk->ckey.l2_o, _small_sk->ckey.l2_o, _O2 * _O2_BYTE);
+	memcpy(_sk->ckey.l2_vo, _small_sk->ckey.l2_vo, _O2 * _V2 * _O2_BYTE);
+	memcpy(
+		_sk->ckey.l2_vv, _small_sk->ckey.l2_vv,
+		TERMS_QUAD_POLY(_V2) * _O2_BYTE);
+
+	((uint8_t*) &_sk)[_SEC_KEY_LEN - 1] =
+		((uint8_t*) &_small_sk)[SMALL_SEC_KEY_LEN - 1];
+}
+/////////////////////////////
+
 unsigned rainbow_secmap(uint8_t* w, const rainbow_key* sk, const uint8_t* z) {
 	// if( gf256v_is_zero(z,_PUB_M_BYTE) ) { memset(w,0,_PUB_N_BYTE); return 0;
 	// }
@@ -231,6 +262,7 @@ void rainbow_genkey(uint8_t* pk, uint8_t* sk) {
 	rainbow_key _pk;
 	rainbow_key _sk;
 	rainbow_genkey_debug(&_pk, &_sk);
+	rainbow_small_key* _small_sk = (rainbow_small_key*) sk;
 
 	uint8_t temp_o1[_O1_BYTE] = {0};
 	unsigned l1_succ = 0;
@@ -238,16 +270,17 @@ void rainbow_genkey(uint8_t* pk, uint8_t* sk) {
 	while (!l1_succ) {
 		if (512 == time)
 			break;
-		gf256v_rand(_sk.vinegar, _V1_BYTE);
-		gen_l1_mat(_sk.mat_l1, &(_sk.ckey), _sk.vinegar);
+		gf256v_rand(_small_sk->vinegar, _V1_BYTE);
+		gen_l1_mat(_small_sk->mat_l1, &(_sk.ckey), _small_sk->vinegar);
 
-		l1_succ = linear_solver_l1(temp_o1, _sk.mat_l1, temp_o1);
+		l1_succ = linear_solver_l1(temp_o1, _small_sk->mat_l1, temp_o1);
 		time++;
 	}
 
-	mpkc_pub_map_gf16_n_m(_sk.temp_vv1, _sk.ckey.l1_vv, _sk.vinegar, _V1, _O1);
+	mpkc_pub_map_gf16_n_m(
+		_small_sk->temp_vv1, _sk.ckey.l1_vv, _small_sk->vinegar, _V1, _O1);
 
-	memcpy(sk, (uint8_t*) (&_sk), sizeof(rainbow_small_key));
+	shrink_rainbow_key(_small_sk, &_sk);
 	mpkc_interpolate_gf16(pk, rainbow_pubmap_wrapper, (const void*) &_pk);
 
 	pk[_PUB_KEY_LEN - 1] = _SALT_BYTE;
@@ -258,9 +291,8 @@ void rainbow_genkey(uint8_t* pk, uint8_t* sk) {
 int rainbow_sign(
 	uint8_t* signature, const uint8_t* _sk, const uint8_t* _digest) {
 	rainbow_key sk;
-	memcpy((void*) &sk, _sk, sizeof(rainbow_small_key));
-	// copy _SALT_BYTE
-	((uint8_t*) &sk)[_SEC_KEY_LEN - 1] = _sk[SMALL_SEC_KEY_LEN - 1];
+	rainbow_small_key* small_sk = (rainbow_small_key*) _sk;
+	expand_rainbow_key(&sk, small_sk);
 	const rainbow_ckey* k = &(sk.ckey);
 	//// line 1 - 5
 	uint8_t mat_l2[_O2 * _O2_BYTE];
@@ -276,7 +308,7 @@ int rainbow_sign(
 	uint8_t* salt = digest_salt + _HASH_LEN;
 	memcpy(digest_salt, _digest, _HASH_LEN);
 
-	memcpy(x, sk.vinegar, _V1_BYTE);
+	memcpy(x, small_sk->vinegar, _V1_BYTE);
 	unsigned succ = 0;
 	unsigned time = 0;
 	while (!succ) {
@@ -290,9 +322,9 @@ int rainbow_sign(
 		gf256v_add(_z, sk.vec_s, _PUB_M_BYTE);
 		gf16mat_prod(y, sk.mat_s, _PUB_M_BYTE, _PUB_M, _z);  /// line 10
 
-		memcpy(temp_o1, sk.temp_vv1, _O1_BYTE);
+		memcpy(temp_o1, small_sk->temp_vv1, _O1_BYTE);
 		gf256v_add(temp_o1, y, _O1_BYTE);
-		linear_solver_l1(x + _V1_BYTE, sk.mat_l1, temp_o1);
+		linear_solver_l1(x + _V1_BYTE, small_sk->mat_l1, temp_o1);
 
 		gen_l2_mat(mat_l2, k, x);
 		mpkc_pub_map_gf16_n_m(temp_o2, k->l2_vv, x, _V2, _O2);
