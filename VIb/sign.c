@@ -13,16 +13,16 @@ int crypto_sign_keypair(unsigned char* pk, unsigned char* sk) {
 	unsigned char* _pk = (unsigned char*) malloc(_PUB_KEY_LEN);
 	if (NULL == _pk)
 		return -1;
-	unsigned char* _sk = (unsigned char*) malloc(_SEC_KEY_LEN);
+	unsigned char* _sk = (unsigned char*) malloc(_SMALL_SEC_KEY_LEN);
 	if (NULL == _sk)
 		return -1;
 
-	rainbow_genkey(_pk, (rainbow_key*) _sk);
+	rainbow_genkey(_pk, _sk);
 
 	gf31_quick_pack(pk, _pk, _PUB_KEY_LEN);
 	pk[_SALT_PUB_KEY_LEN - 1] = _SALT_BYTE;
-	gf31_quick_pack(sk, _sk, _SEC_KEY_LEN);
-	sk[_SALT_SEC_KEY_LEN - 1] = _SALT_BYTE;
+	gf31_quick_pack(sk, _sk, _SMALL_SEC_KEY_LEN);
+	sk[_SMALL_SALT_SEC_KEY_LEN - 1] = _SALT_BYTE;
 
 	free(_pk);
 	free(_sk);
@@ -40,10 +40,10 @@ int crypto_sign(
 	memcpy(sm, m, mlen);
 	smlen[0] = mlen + _SALT_SIGNATURE_BYTE;
 
-	unsigned char* _sk = (unsigned char*) malloc(_SEC_KEY_LEN);
+	unsigned char* _sk = (unsigned char*) malloc(_SMALL_SEC_KEY_LEN);
 	if (NULL == _sk)
 		return -1;
-	gf31_quick_unpack(_sk, sk, _SEC_KEY_LEN);
+	gf31_quick_unpack(_sk, sk, _SMALL_SEC_KEY_LEN);
 
 	int r = rainbow_sign(sm + mlen, (const rainbow_key*) _sk, digest);
 

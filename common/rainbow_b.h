@@ -36,13 +36,46 @@ struct _rainbow_key {
 
 typedef struct _rainbow_key rainbow_key;
 
+// smaller private key for rainbow-eta
+
+struct _rainbow_small_ckey {
+	uint8_t l2_o[_O2 * _O2];
+	uint8_t l2_vo[_O2][_V2 * _O2];
+	uint8_t l2_vv[TERMS_QUAD_POLY(_V2) * _O2];
+};
+
+typedef struct _rainbow_small_ckey rainbow_small_ckey;
+
+struct _rainbow_small_key {
+	uint8_t mat_t[_SEC_N * _PUB_N_BYTE];
+	uint8_t vec_t[_PUB_N_BYTE];
+	uint8_t mat_s[_PUB_M * _PUB_M_BYTE];
+	uint8_t vec_s[_PUB_M_BYTE];
+
+	uint8_t vinegar[_V1];
+	uint8_t mat_l1[_O1 * _O1];
+	uint8_t temp_vv1[_O1];
+
+	rainbow_small_ckey ckey;
+};
+
+typedef struct _rainbow_small_key rainbow_small_key;
+
 #define _SEC_KEY_LEN (sizeof(rainbow_key))
 
 #define _SEC_KEY_LEN_PACK (_GF31_PACK_SIZE(_SEC_KEY_LEN))
 
 #define _SALT_SEC_KEY_LEN (_SEC_KEY_LEN_PACK + 1)
 
-void rainbow_genkey(uint8_t* pk, rainbow_key* sk);
+#define _SMALL_SEC_KEY_LEN (sizeof(rainbow_small_key))
+
+#define _SMALL_SEC_KEY_LEN_PACK (_GF31_PACK_SIZE(_SMALL_SEC_KEY_LEN))
+
+#define _SMALL_SALT_SEC_KEY_LEN (_SMALL_SEC_KEY_LEN_PACK + 1)
+
+#define SMALL_SEC_KEY_LEN _SMALL_SALT_SEC_KEY_LEN
+
+void rainbow_genkey(uint8_t* pk, uint8_t* sk);
 
 unsigned rainbow_secmap(uint8_t* w, const rainbow_key* sk, const uint8_t* z);
 

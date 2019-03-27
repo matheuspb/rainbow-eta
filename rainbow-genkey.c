@@ -9,6 +9,7 @@
 #include "api.h"
 
 #ifndef SMALL_SEC_KEY_LEN
+#error rainbow-eta not implemented for these parameters
 #define SMALL_SEC_KEY_LEN CRYPTO_SECRETKEYBYTES
 #endif
 

@@ -75,12 +75,29 @@ rainbow_pubmap_wrapper(void* z, const void* pk_key, const void* w) {
 		(uint8_t*) z, (const rainbow_key*) pk_key, (const uint8_t*) w);
 }
 
-void rainbow_genkey(uint8_t* pk, rainbow_key* sk) {
-	rainbow_key _pk;
-	rainbow_genkey_debug(&_pk, sk);
+// helper functions to manipulate smaller rainbow-eta key
+static void shrink_rainbow_key(rainbow_small_key* _small_sk, rainbow_key* _sk) {
+	memcpy(_small_sk->mat_t, _sk->mat_t, _PUB_N * _PUB_N_BYTE);
+	memcpy(_small_sk->vec_t, _sk->vec_t, _PUB_N_BYTE);
+	memcpy(_small_sk->mat_s, _sk->mat_s, _PUB_M * _PUB_M_BYTE);
+	memcpy(_small_sk->vec_s, _sk->vec_s, _PUB_M_BYTE);
 
-	mpkc_interpolate_gf31(pk, rainbow_pubmap_wrapper, (const void*) &_pk);
+	memcpy(_small_sk->ckey.l2_o, _sk->ckey.l2_o, _O2 * _O2);
+	memcpy(_small_sk->ckey.l2_vo, _sk->ckey.l2_vo, _O2 * _V2 * _O2);
+	memcpy(_small_sk->ckey.l2_vv, _sk->ckey.l2_vv, TERMS_QUAD_POLY(_V2) * _O2);
 }
+
+static void expand_rainbow_key(rainbow_key* _sk, rainbow_small_key* _small_sk) {
+	memcpy(_sk->mat_t, _small_sk->mat_t, _PUB_N * _PUB_N_BYTE);
+	memcpy(_sk->vec_t, _small_sk->vec_t, _PUB_N_BYTE);
+	memcpy(_sk->mat_s, _small_sk->mat_s, _PUB_M * _PUB_M_BYTE);
+	memcpy(_sk->vec_s, _small_sk->vec_s, _PUB_M_BYTE);
+
+	memcpy(_sk->ckey.l2_o, _small_sk->ckey.l2_o, _O2 * _O2);
+	memcpy(_sk->ckey.l2_vo, _small_sk->ckey.l2_vo, _O2 * _V2 * _O2);
+	memcpy(_sk->ckey.l2_vv, _small_sk->ckey.l2_vv, TERMS_QUAD_POLY(_V2) * _O2);
+}
+/////////////////////////////
 
 unsigned rainbow_secmap(uint8_t* w, const rainbow_key* sk, const uint8_t* z) {
 	uint8_t _z[_PUB_M_BYTE];
@@ -245,30 +262,44 @@ static
 
 #include "gf31_convert.h"
 
-/// algorithm 7
-int rainbow_sign(
-	uint8_t* signature, const rainbow_key* sk, const uint8_t* digest) {
-	const rainbow_ckey* k = &(sk->ckey);
-	//// line 1 - 5
-	uint8_t mat_l1[_O1 * _O1];
-	uint8_t mat_l2[_O2 * _O2];
+void rainbow_genkey(uint8_t* pk, uint8_t* sk) {
+	rainbow_key _pk;
+	rainbow_key _sk;
+	rainbow_genkey_debug(&_pk, &_sk);
+	rainbow_small_key* _small_sk = (rainbow_small_key*) sk;
+
 	uint8_t temp_o1[_O1] = {0};
-	uint8_t temp_o2[_O2];
-	uint8_t temp_o2_2[_O2];
-	uint8_t vinegar[_V1];
 	unsigned l1_succ = 0;
 	unsigned time = 0;
 	do {
 		if (512 == time)
 			break;
-		gf31v_rand(vinegar, _V1);
-		gen_l1_mat(mat_l1, k, vinegar);
+		gf31v_rand(_small_sk->vinegar, _V1);
+		gen_l1_mat(_small_sk->mat_l1, &(_sk.ckey), _small_sk->vinegar);
 
-		l1_succ = linear_solver_l1(temp_o1, mat_l1, temp_o1);
+		l1_succ = linear_solver_l1(temp_o1, _small_sk->mat_l1, temp_o1);
 		time++;
 	} while (!l1_succ);
-	uint8_t temp_vv1[_O1];
-	mpkc_pub_map_gf31_n_m(temp_vv1, k->l1_vv, vinegar, _V1, _O1);
+
+	mpkc_pub_map_gf31_n_m(
+		_small_sk->temp_vv1, _sk.ckey.l1_vv, _small_sk->vinegar, _V1, _O1);
+
+	shrink_rainbow_key(_small_sk, &_sk);
+	mpkc_interpolate_gf31(pk, rainbow_pubmap_wrapper, (const void*) &_pk);
+}
+
+/// algorithm 7
+int rainbow_sign(
+	uint8_t* signature, const rainbow_key* _sk, const uint8_t* digest) {
+	rainbow_key sk;
+	rainbow_small_key* small_sk = (rainbow_small_key*) _sk;
+	expand_rainbow_key(&sk, small_sk);
+	const rainbow_ckey* k = &(sk.ckey);
+	//// line 1 - 5
+	uint8_t mat_l2[_O2 * _O2];
+	uint8_t temp_o1[_O1] = {0};
+	uint8_t temp_o2[_O2];
+	uint8_t temp_o2_2[_O2];
 	//// line 7 - 14
 	uint8_t _z[_PUB_N_BYTE];
 	uint8_t y[_PUB_N_BYTE];
@@ -281,8 +312,9 @@ int rainbow_sign(
 
 	uint8_t packed_salt_digest[_DIGEST_BYTE];
 
-	memcpy(x, vinegar, _V1);
+	memcpy(x, small_sk->vinegar, _V1);
 	unsigned succ = 0;
+	unsigned time = 0;
 	do {
 		if (512 == time)
 			break;
@@ -293,12 +325,12 @@ int rainbow_sign(
 			_HASH_LEN + _SALT_BYTE);  /// line 9
 		gf31_from_digest(_z, packed_salt_digest, _PUB_M);
 
-		gf31v_sub(_z, sk->vec_s, _PUB_M_BYTE);
-		gf31mat_prod(y, sk->mat_s, _PUB_M_BYTE, _PUB_M, _z);  /// line 10
+		gf31v_sub(_z, sk.vec_s, _PUB_M_BYTE);
+		gf31mat_prod(y, sk.mat_s, _PUB_M_BYTE, _PUB_M, _z);  /// line 10
 
 		memcpy(temp_o1, y, _O1);
-		gf31v_sub(temp_o1, temp_vv1, _O1);
-		linear_solver_l1(x + _V1, mat_l1, temp_o1);
+		gf31v_sub(temp_o1, small_sk->temp_vv1, _O1);
+		linear_solver_l1(x + _V1, small_sk->mat_l1, temp_o1);
 
 		gen_l2_mat(mat_l2, k, x);
 		memcpy(temp_o2, y + _O1, _O2);
@@ -309,8 +341,8 @@ int rainbow_sign(
 		time++;
 	} while (!succ);
 
-	gf31v_sub(x, sk->vec_t, _PUB_N_BYTE);
-	gf31mat_prod(w, sk->mat_t, _PUB_N_BYTE, _PUB_N, x);
+	gf31v_sub(x, sk.vec_t, _PUB_N_BYTE);
+	gf31mat_prod(w, sk.mat_t, _PUB_N_BYTE, _PUB_N, x);
 
 	memset(signature, 0, _SALT_SIGNATURE_BYTE);
 	// return time;
