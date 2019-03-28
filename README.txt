@@ -1,6 +1,5 @@
 This folder contains the c-code of the reference implementation of the Rainbow
-signature scheme.
-Each of the subfolders contains the code for one parameter set
+signature scheme. Each of the subfolders contains the code for one parameter set
 
 Ia    - Rainbow(GF(16),32,32,32)
 Ib    - Rainbow(GF(31),36,28,28)
@@ -16,19 +15,15 @@ VIb   - Rainbow(GF(31),84,56,56)
 Type 'make'. It will generate an executable using source files from the
 directory specified in PROJ_DIR.
 
-The default value of PROJ_DIR is Ia.  To generate executable files
-PQCgenKAT_sign, rainbow-genkey, rainbow-sign, and rainbow-verify
-from other directories, please type "make PROJ=Ib" or replace Ib
-with any other directory.
+The default value of PROJ_DIR is Ia. To generate executable files
+rainbow-genkey, rainbow-sign, and rainbow-verify from other directories, please
+type "make PROJ=Ib" or replace Ib with any other directory.
 
 For explanation of files under these directories, please refer to the
 README.txt in each directory.
 
 other files under this directory are:
-PQCgenKAT_sign.c - source file for program generating the KAT files
 rainbow-{genkey,sign,verify}.c - source file for testing programs
-util.c - small utility programs
-util.h - header for utility programs
 
 
 The single algorithms rainbow-genkey, rainbow-sign and rainbow-verify are used
