@@ -1,48 +1,28 @@
 PROJ = Ia
 PROJ_DIR = ./$(PROJ)
 
-CFLAGS = -O2 -std=c11 -Wall -Wextra
-CFLAGS += -I/usr/local/include
-CFLAGS += -I/opt/local/include
-CFLAGS += -I/usr/include -I$(PROJ_DIR)
-CFLAGS += -I./common
-LDFLAGS = -L/usr/local/lib -L/opt/local/lib -L/usr/lib -lcrypto
+CFLAGS = -O2 -std=c11 -Wall -Wextra -I$(PROJ_DIR) -I./common
+LDFLAGS = -lcrypto
 
-SRCS = $(wildcard $(PROJ_DIR)/*.c)
-SRCS_O = $(SRCS:.c=.o)
-SRCS_O_ND = $(subst $(PROJ_DIR)/,,$(SRCS_O))
-COMMON = $(wildcard common/*.c)
-COMMON_O = $(COMMON:.c=.o)
-COMMON_O_ND = $(subst common/,,$(COMMON_O))
+SRC_FILES = $(wildcard $(PROJ_DIR)/*.c) $(wildcard common/*.c)
+OBJ_FILES = $(SRC_FILES:.c=.o)
 
-OBJ = $(SRCS_O_ND) $(COMMON_O_ND)
-EXE = rainbow-genkey rainbow-sign rainbow-verify
+TARGET = $(basename $(wildcard *.c))
 
-.PHONY: all clean
+RAND_FILE := $(shell mktemp --suffix=-rainbow-message)
+PK_FILE := $(shell mktemp --suffix=-rainbow-public-key)
+SK_FILE := $(shell mktemp --suffix=-rainbow-secret-key)
+SIG_FILE := $(shell mktemp --suffix=-rainbow-signature)
 
-all: $(EXE)
+all: $(TARGET)
 
-rainbow-genkey: $(OBJ) rainbow-genkey.o
+$(TARGET): %: $(OBJ_FILES)
 
-rainbow-sign: $(OBJ) rainbow-sign.o
-
-rainbow-verify: $(OBJ) rainbow-verify.o
-
-%.o: $(PROJ_DIR)/%.c
-	$(CC) $(CFLAGS) -c $<
-
-%.o: common/%.c
-	$(CC) $(CFLAGS) -c $<
-
-test: $(EXE)
-	@echo "Generating key pair"
-	@./rainbow-genkey pk sk
-	@echo "Signing"
-	@./rainbow-sign sk Makefile > sig
-	@echo "Verifying"
-	@./rainbow-verify pk sig Makefile
-	@rm pk sk sig
+test: all
+	head -c 1024 /dev/urandom > $(RAND_FILE)
+	./rainbow-genkey $(PK_FILE) $(SK_FILE)
+	./rainbow-sign $(SK_FILE) $(RAND_FILE) > $(SIG_FILE)
+	./rainbow-verify $(PK_FILE) $(SIG_FILE) $(RAND_FILE)
 
 clean:
-	@rm -f *.o $(EXE)
-	@rm -f pk sk sig
+	rm -f $(OBJ_FILES) $(TARGET) /tmp/*-rainbow*
