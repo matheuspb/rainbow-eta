@@ -25,4 +25,4 @@ test: all
 	./rainbow-verify $(PK_FILE) $(SIG_FILE) $(RAND_FILE)
 
 clean:
-	rm -f $(OBJ_FILES) $(TARGET) /tmp/*-rainbow*
+	rm -f $(TARGET) **/*.o /tmp/*-rainbow*
