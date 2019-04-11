@@ -24,5 +24,10 @@ test: all
 	./rainbow-sign $(SK_FILE) $(RAND_FILE) > $(SIG_FILE)
 	./rainbow-verify $(PK_FILE) $(SIG_FILE) $(RAND_FILE)
 
+kat: all
+	rm -f $(PROJ_DIR)/*.r*
+	./rainbow-kat
+	mv *.req *.rsp $(PROJ_DIR)
+
 clean:
-	rm -f $(OBJ_FILES) $(TARGET) /tmp/*-rainbow*
+	rm -f $(OBJ_FILES) $(TARGET) /tmp/*-rainbow* $(PROJ_DIR)/*.r*

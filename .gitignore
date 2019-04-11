@@ -52,7 +52,11 @@ Mkfile.old
 dkms.conf
 
 # Executables
-PQCgenKAT_sign
+rainbow-kat
 rainbow-genkey
 rainbow-sign
 rainbow-verify
+
+# KAT response/request files
+**/*.req
+**/*.rsp
