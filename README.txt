@@ -24,6 +24,8 @@ README.txt in each directory.
 
 other files under this directory are:
 rainbow-{genkey,sign,verify}.c - source file for testing programs
+rainbow-eta-ref.patch          - minimal patch to be applied on top of the
+                                 original implementation obtained from NIST
 
 
 The single algorithms rainbow-genkey, rainbow-sign and rainbow-verify are used
